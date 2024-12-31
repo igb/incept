@@ -1,10 +1,23 @@
 use evdev::{Device, InputEventKind};
 use std::path::Path;
-use uinput::Device as UInputDevice;
+
 
 fn main() {
-   // Open the input device
-    let input_device = Device::open(Path::new("/dev/input/event0")).expect("Failed to open device");
+
+
+    let device_path = Path::new("/dev/input/event3");
+
+
+  // Open the input device
+    let mut device = match Device::open(device_path) {
+        Ok(dev) => dev,
+        Err(err) => {
+            eprintln!("Failed to open device: {}", err);
+            return;
+        },
+    };
+
+        println!("Listening for events on: {}", device.name().unwrap_or("Unknown device"));
 
 
 }
