@@ -20,7 +20,7 @@ fn main() {
     )];
 
     // a circular buffer to store keystrokes...it's length should be equal to the length of the longest shortcut but elt's hardcode for now
-    let mut buffer: [char; 4];
+    let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
     let mut buffer_head: usize = 0;
     let mut buffer_end: usize = 0;
 
@@ -52,6 +52,12 @@ fn main() {
                         ev.value(),
                         ev.code()
                     );
+                    log_keystroke(
+                        key_to_char(key).expect("invalid keystroke...could not mapt char"),
+                        &mut buffer,
+                        &mut buffer_head,
+                        &mut buffer_end,
+                    );
                 }
                 InputEventKind::RelAxis(axis) => {
                     println!("Relative axis event: {:?} - Value: {}", axis, ev.value());
@@ -67,7 +73,7 @@ fn main() {
     }
 }
 
-fn evdev_key_to_char(key: evdev::Key) -> Option<char> {
+fn key_to_char(key: evdev::Key) -> Option<char> {
     match key {
         evdev::Key::KEY_A => Some('a'),
         evdev::Key::KEY_B => Some('b'),
@@ -135,12 +141,15 @@ fn test_buffer_impl() {
     log_keystroke('a', &mut buffer, &mut buffer_head, &mut buffer_end);
     assert_eq!(2, buffer_head);
     assert_eq!(3, buffer_end);
+
     log_keystroke('l', &mut buffer, &mut buffer_head, &mut buffer_end);
     assert_eq!(3, buffer_head);
     assert_eq!(0, buffer_end);
+
     log_keystroke('t', &mut buffer, &mut buffer_head, &mut buffer_end);
     assert_eq!(0, buffer_head);
     assert_eq!(1, buffer_end);
+
     log_keystroke('x', &mut buffer, &mut buffer_head, &mut buffer_end);
     assert_eq!('x', buffer[0]);
     assert_eq!(1, buffer_head);
