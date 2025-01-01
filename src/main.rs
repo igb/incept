@@ -116,3 +116,14 @@ fn evdev_key_to_char(key: evdev::Key) -> Option<char> {
         _ => None, // Return None for unmapped keys
     }
 }
+
+#[cfg(test)]
+#[test]
+fn test_buffer_impl() {
+    let mut buffer: [char; 4] = ['_', '_', '_', '_'];
+    let mut buffer_start: usize = 0;
+    let mut buffer_end: usize = 0;
+
+    log_keystroke('p', &mut buffer, &mut buffer_start, &mut buffer_end);
+    assert_eq!('p', buffer[0]);
+}
