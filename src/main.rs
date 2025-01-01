@@ -2,6 +2,16 @@ use evdev::{Device, InputEventKind};
 use std::path::Path;
 
 fn main() {
+    // this should eventually be managed by an external file under user control
+    let shortcuts = [(
+        "palt",
+        "Please generate an alt-text description for this image.",
+    )];
+
+    // a circular buffer to store keystrokes...it's length should be equal to the length of the longest shortcut but elt's hardcode for now
+    let mut buffer: [char; 4];
+
+    // need to make this dynamic
     let device_path = Path::new("/dev/input/event3");
 
     // Open the input device
