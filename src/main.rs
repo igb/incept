@@ -4,9 +4,11 @@ use std::path::Path;
 fn log_keystroke<const N: usize>(
     c: char,
     buffer: &mut [char; N],
-    start: &mut usize,
+    head: &mut usize,
     end: &mut usize,
 ) {
+    buffer[*head] = c;
+    *head += 1;
 }
 
 fn main() {
@@ -18,7 +20,7 @@ fn main() {
 
     // a circular buffer to store keystrokes...it's length should be equal to the length of the longest shortcut but elt's hardcode for now
     let mut buffer: [char; 4];
-    let mut buffer_start: usize = 0;
+    let mut buffer_head: usize = 0;
     let mut buffer_end: usize = 0;
 
     // need to make this dynamic
@@ -120,10 +122,12 @@ fn evdev_key_to_char(key: evdev::Key) -> Option<char> {
 #[cfg(test)]
 #[test]
 fn test_buffer_impl() {
-    let mut buffer: [char; 4] = ['_', '_', '_', '_'];
-    let mut buffer_start: usize = 0;
+    let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
+    let mut buffer_head: usize = 0;
     let mut buffer_end: usize = 0;
 
-    log_keystroke('p', &mut buffer, &mut buffer_start, &mut buffer_end);
+    log_keystroke('p', &mut buffer, &mut buffer_head, &mut buffer_end);
     assert_eq!('p', buffer[0]);
+    assert_eq!(1, buffer_head);
+    assert_eq!(0, buffer_end);
 }
