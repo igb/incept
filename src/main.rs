@@ -8,7 +8,8 @@ fn log_keystroke<const N: usize>(
     end: &mut usize,
 ) {
     buffer[*head] = c;
-    *head += 1;
+    *head = (*head + 1) % N;
+    *end = (*head + 1) % N;
 }
 
 fn main() {
@@ -129,5 +130,19 @@ fn test_buffer_impl() {
     log_keystroke('p', &mut buffer, &mut buffer_head, &mut buffer_end);
     assert_eq!('p', buffer[0]);
     assert_eq!(1, buffer_head);
+    assert_eq!(2, buffer_end);
+
+    log_keystroke('a', &mut buffer, &mut buffer_head, &mut buffer_end);
+    assert_eq!(2, buffer_head);
+    assert_eq!(3, buffer_end);
+    log_keystroke('l', &mut buffer, &mut buffer_head, &mut buffer_end);
+    assert_eq!(3, buffer_head);
     assert_eq!(0, buffer_end);
+    log_keystroke('t', &mut buffer, &mut buffer_head, &mut buffer_end);
+    assert_eq!(0, buffer_head);
+    assert_eq!(1, buffer_end);
+    log_keystroke('x', &mut buffer, &mut buffer_head, &mut buffer_end);
+    assert_eq!('x', buffer[0]);
+    assert_eq!(1, buffer_head);
+    assert_eq!(2, buffer_end);
 }
