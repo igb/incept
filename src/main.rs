@@ -1,28 +1,44 @@
 use evdev::{Device, InputEventKind};
 use std::path::Path;
 
-fn log_keystroke<const N: usize>(
-    c: char,
-    buffer: &mut [char; N],
-    head: &mut usize,
-    end: &mut usize,
-) {
+fn log_keystroke<const N: usize>(c: char, buffer: &mut [char; N], head: &mut usize) {
     buffer[*head] = c;
     *head = (*head + 1) % N;
-    *end = (*head + 1) % N;
+}
+fn buffer_to_string<const N: usize>(buffer: [char; N], head: usize) -> String {
+    let mut result = String::new();
+
+    let mut index = head % N;
+
+    loop {
+        result.push(buffer[index]);
+        if index == (head + (N - 1)) % N {
+            break;
+        }
+        index = (index + 1) % N;
+    }
+    return result;
+}
+
+fn buffer_matches<const N: usize>(buffer: [char; N], head: usize, alias: String) -> bool {
+    return false;
 }
 
 fn main() {
     // this should eventually be managed by an external file under user control
-    let shortcuts = [(
-        "palt",
-        "Please generate an alt-text description for this image.",
-    )];
+    let shortcuts = [
+        (
+            "palt",
+            "Please generate an alt-text description for this image.",
+        ),
+        ("tm ", "™"),
+        ("foo", "bar"),
+        ("omw", "On my way!"),
+    ];
 
     // a circular buffer to store keystrokes...it's length should be equal to the length of the longest shortcut but elt's hardcode for now
     let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
     let mut buffer_head: usize = 0;
-    let mut buffer_end: usize = 0;
 
     // need to make this dynamic
     let device_path = Path::new("/dev/input/event3");
@@ -56,7 +72,6 @@ fn main() {
                         key_to_char(key).expect("invalid keystroke...could not mapt char"),
                         &mut buffer,
                         &mut buffer_head,
-                        &mut buffer_end,
                     );
                 }
                 InputEventKind::RelAxis(axis) => {
@@ -128,30 +143,64 @@ fn key_to_char(key: evdev::Key) -> Option<char> {
 
 #[cfg(test)]
 #[test]
+fn test_buffer_matches() {
+    let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
+    let mut buffer_head: usize = 0;
+
+    log_keystroke('p', &mut buffer, &mut buffer_head);
+    log_keystroke('a', &mut buffer, &mut buffer_head);
+    log_keystroke('l', &mut buffer, &mut buffer_head);
+    log_keystroke('t', &mut buffer, &mut buffer_head);
+
+    assert!(buffer_matches(buffer, buffer_head, "palt".to_string()));
+}
+
+#[test]
 fn test_buffer_impl() {
     let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
     let mut buffer_head: usize = 0;
-    let mut buffer_end: usize = 0;
 
-    log_keystroke('p', &mut buffer, &mut buffer_head, &mut buffer_end);
+    log_keystroke('p', &mut buffer, &mut buffer_head);
     assert_eq!('p', buffer[0]);
     assert_eq!(1, buffer_head);
-    assert_eq!(2, buffer_end);
 
-    log_keystroke('a', &mut buffer, &mut buffer_head, &mut buffer_end);
+    log_keystroke('a', &mut buffer, &mut buffer_head);
     assert_eq!(2, buffer_head);
-    assert_eq!(3, buffer_end);
 
-    log_keystroke('l', &mut buffer, &mut buffer_head, &mut buffer_end);
+    log_keystroke('l', &mut buffer, &mut buffer_head);
     assert_eq!(3, buffer_head);
-    assert_eq!(0, buffer_end);
 
-    log_keystroke('t', &mut buffer, &mut buffer_head, &mut buffer_end);
+    log_keystroke('t', &mut buffer, &mut buffer_head);
     assert_eq!(0, buffer_head);
-    assert_eq!(1, buffer_end);
 
-    log_keystroke('x', &mut buffer, &mut buffer_head, &mut buffer_end);
+    log_keystroke('x', &mut buffer, &mut buffer_head);
     assert_eq!('x', buffer[0]);
     assert_eq!(1, buffer_head);
-    assert_eq!(2, buffer_end);
+}
+
+#[test]
+fn test_buffer_to_string() {
+    let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
+    let mut buffer_head: usize = 0;
+
+    assert_eq!("", buffer_to_string(buffer, buffer_head));
+
+    log_keystroke('p', &mut buffer, &mut buffer_head);
+    log_keystroke('a', &mut buffer, &mut buffer_head);
+    log_keystroke('l', &mut buffer, &mut buffer_head);
+    log_keystroke('t', &mut buffer, &mut buffer_head);
+
+    assert_eq!("palt", buffer_to_string(buffer, buffer_head));
+
+    log_keystroke('o', &mut buffer, &mut buffer_head);
+    log_keystroke('m', &mut buffer, &mut buffer_head);
+    log_keystroke('w', &mut buffer, &mut buffer_head);
+
+    assert_eq!("tomw", buffer_to_string(buffer, buffer_head));
+
+    log_keystroke(' ', &mut buffer, &mut buffer_head);
+    log_keystroke('t', &mut buffer, &mut buffer_head);
+    log_keystroke('m', &mut buffer, &mut buffer_head);
+
+    assert_eq!("w tm", buffer_to_string(buffer, buffer_head));
 }
