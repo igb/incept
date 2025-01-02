@@ -168,6 +168,8 @@ fn test_buffer_matches() {
     log_keystroke(' ', &mut buffer, &mut buffer_head);
 
     assert!(buffer_matches(buffer, buffer_head, "tm ".to_string()));
+
+    assert!(!buffer_matches(buffer, buffer_head, "wtm".to_string()));
 }
 
 #[test]
