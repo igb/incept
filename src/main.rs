@@ -11,7 +11,9 @@ fn buffer_to_string<const N: usize>(buffer: [char; N], head: usize) -> String {
     let mut index = head % N;
 
     loop {
-        result.push(buffer[index]);
+        if (buffer[index] != '\0') {
+            result.push(buffer[index]);
+        }
         if index == (head + (N - 1)) % N {
             break;
         }
@@ -21,7 +23,8 @@ fn buffer_to_string<const N: usize>(buffer: [char; N], head: usize) -> String {
 }
 
 fn buffer_matches<const N: usize>(buffer: [char; N], head: usize, alias: String) -> bool {
-    return false;
+    let buffer_str = buffer_to_string(buffer, head); //TODO: can replace string creation here by directly iterating on buffer
+    return buffer_str.ends_with(&alias);
 }
 
 fn main() {
@@ -153,6 +156,18 @@ fn test_buffer_matches() {
     log_keystroke('t', &mut buffer, &mut buffer_head);
 
     assert!(buffer_matches(buffer, buffer_head, "palt".to_string()));
+
+    log_keystroke('o', &mut buffer, &mut buffer_head);
+    log_keystroke('m', &mut buffer, &mut buffer_head);
+    log_keystroke('w', &mut buffer, &mut buffer_head);
+
+    assert!(buffer_matches(buffer, buffer_head, "omw".to_string()));
+
+    log_keystroke('t', &mut buffer, &mut buffer_head);
+    log_keystroke('m', &mut buffer, &mut buffer_head);
+    log_keystroke(' ', &mut buffer, &mut buffer_head);
+
+    assert!(buffer_matches(buffer, buffer_head, "tm ".to_string()));
 }
 
 #[test]
