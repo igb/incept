@@ -71,11 +71,25 @@ fn main() {
                         ev.value(),
                         ev.code()
                     );
-                    log_keystroke(
-                        key_to_char(key).expect("invalid keystroke...could not mapt char"),
-                        &mut buffer,
-                        &mut buffer_head,
-                    );
+                    if (ev.value() == 0) {
+                        log_keystroke(
+                            key_to_char(key).expect("invalid keystroke...could not mapt char"),
+                            &mut buffer,
+                            &mut buffer_head,
+                        );
+
+                        for alias in shortcuts {
+                            if (buffer_matches(buffer, buffer_head, alias.0.to_string())) {
+                                println!("Found match! Replacing {} with {}", alias.0, alias.1);
+                                break;
+                            }
+                            println!(
+                                "Did not match  {} against {}",
+                                alias.0,
+                                buffer_to_string(buffer, buffer_head)
+                            );
+                        }
+                    }
                 }
                 InputEventKind::RelAxis(axis) => {
                     println!("Relative axis event: {:?} - Value: {}", axis, ev.value());
