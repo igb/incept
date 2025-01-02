@@ -1,5 +1,11 @@
 use evdev::{Device, InputEventKind};
+use std::fs::OpenOptions;
+use std::os::fd::AsFd;
+use std::os::fd::AsRawFd;
 use std::path::Path;
+use uinput::event::keyboard::Key;
+use uinput::event::Keyboard::All;
+use uinput::Device as UInputDevice;
 
 fn log_keystroke<const N: usize>(c: char, buffer: &mut [char; N], head: &mut usize) {
     buffer[*head] = c;
@@ -55,6 +61,22 @@ fn main() {
         }
     };
 
+    //open the vurtual input device for writing replacements
+    let uinput_file = match OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open("/dev/uinput")
+    {
+        Ok(dev) => dev,
+        Err(err) => {
+            eprintln!("Failed to open device: {}", err);
+            return;
+        }
+    }; // Opens the uinput device file
+    let uinput_fd = uinput_file.as_raw_fd(); // Gets the raw file descriptor (i32)
+
+    println!("uinput file descriptor: {:?}", uinput_fd);
+
     println!(
         "Listening for events on: {}",
         device.name().unwrap_or("Unknown device")
@@ -73,7 +95,7 @@ fn main() {
                     );
                     if (ev.value() == 0) {
                         log_keystroke(
-                            key_to_char(key).expect("invalid keystroke...could not mapt char"),
+                            key_to_char(key).expect("invalid keystroke...could not map char"),
                             &mut buffer,
                             &mut buffer_head,
                         );
@@ -81,6 +103,23 @@ fn main() {
                         for alias in shortcuts {
                             if (buffer_matches(buffer, buffer_head, alias.0.to_string())) {
                                 println!("Found match! Replacing {} with {}", alias.0, alias.1);
+
+                                let mut uinput_device = uinput::open("/dev/uinput")
+                                    .unwrap()
+                                    .name("Virtual Keyboard")
+                                    .unwrap()
+                                    .event(All)
+                                    .unwrap()
+                                    .create()
+                                    .unwrap(); // Add events.
+
+                                uinput_device.press(&Key::Z);
+                                uinput_device.press(&Key::Z);
+                                uinput_device.press(&Key::Z);
+                                // uinput_device.press(Key::Z);
+                                // uinput_device.press(Key::Z);
+                                uinput_device.synchronize();
+
                                 break;
                             }
                             println!(
