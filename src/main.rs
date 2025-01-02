@@ -82,6 +82,15 @@ fn main() {
         device.name().unwrap_or("Unknown device")
     );
 
+    let mut uinput_device = uinput::open("/dev/uinput")
+        .unwrap()
+        .name("Virtual Keyboard")
+        .unwrap()
+        .event(All)
+        .unwrap()
+        .create()
+        .unwrap(); // Add events.
+
     // Event loop: read and process events
     loop {
         for ev in device.fetch_events().unwrap() {
@@ -104,18 +113,10 @@ fn main() {
                             if (buffer_matches(buffer, buffer_head, alias.0.to_string())) {
                                 println!("Found match! Replacing {} with {}", alias.0, alias.1);
 
-                                let mut uinput_device = uinput::open("/dev/uinput")
-                                    .unwrap()
-                                    .name("Virtual Keyboard")
-                                    .unwrap()
-                                    .event(All)
-                                    .unwrap()
-                                    .create()
-                                    .unwrap(); // Add events.
-
                                 uinput_device.press(&Key::Z);
+                                uinput_device.release(&Key::Z);
                                 uinput_device.press(&Key::Z);
-                                uinput_device.press(&Key::Z);
+                                uinput_device.release(&Key::Z);
                                 // uinput_device.press(Key::Z);
                                 // uinput_device.press(Key::Z);
                                 uinput_device.synchronize();
@@ -193,7 +194,7 @@ fn key_to_char(key: evdev::Key) -> Option<char> {
         evdev::Key::KEY_COMMA => Some(','),
         evdev::Key::KEY_DOT => Some('.'),
         evdev::Key::KEY_SLASH => Some('/'),
-        _ => None, // Return None for unmapped keys
+        _ => Some('\0'), // Return None for unmapped keys
     }
 }
 
