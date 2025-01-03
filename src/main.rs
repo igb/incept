@@ -117,7 +117,7 @@ fn main() {
                                     uinput_device.press(&Key::BackSpace);
                                     uinput_device.release(&Key::BackSpace);
                                 }
-
+                                uinput_device.synchronize();
                                 for substitution_char in alias.1.chars() {
                                     let subchar = char_to_key(substitution_char);
                                     println!("Printing  {}", substitution_char);
