@@ -3,6 +3,7 @@ use std::fs::OpenOptions;
 use std::os::fd::AsFd;
 use std::os::fd::AsRawFd;
 use std::path::Path;
+use std::{thread, time::Duration};
 use uinput::event::keyboard::Key;
 use uinput::event::Keyboard::All;
 use uinput::Device as UInputDevice;
@@ -115,9 +116,17 @@ fn main() {
                                 for alias_char in alias.0.chars() {
                                     uinput_device.press(&Key::BackSpace);
                                     uinput_device.release(&Key::BackSpace);
-                                    uinput_device.synchronize();
                                 }
 
+                                for substitution_char in alias.1.chars() {
+                                    let subchar = char_to_key(substitution_char);
+                                    println!("Printing  {}", substitution_char);
+                                    if subchar != None {
+                                        uinput_device.press(&subchar.unwrap());
+                                        uinput_device.release(&subchar.unwrap());
+                                    }
+                                }
+                                uinput_device.synchronize();
                                 break;
                             }
                             println!(
@@ -196,7 +205,7 @@ fn key_to_char(key: evdev::Key) -> Option<char> {
 }
 
 fn char_to_key(ch: char) -> Option<Key> {
-    match ch {
+    match ch.to_lowercase().next().unwrap() {
         'a' => Some(Key::A),
         'b' => Some(Key::B),
         'c' => Some(Key::C),
