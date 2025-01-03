@@ -112,14 +112,11 @@ fn main() {
                         for alias in shortcuts {
                             if (buffer_matches(buffer, buffer_head, alias.0.to_string())) {
                                 println!("Found match! Replacing {} with {}", alias.0, alias.1);
-
-                                uinput_device.press(&Key::Z);
-                                uinput_device.release(&Key::Z);
-                                uinput_device.press(&Key::Z);
-                                uinput_device.release(&Key::Z);
-                                // uinput_device.press(Key::Z);
-                                // uinput_device.press(Key::Z);
-                                uinput_device.synchronize();
+                                for alias_char in alias.0.chars() {
+                                    uinput_device.press(&Key::BackSpace);
+                                    uinput_device.release(&Key::BackSpace);
+                                    uinput_device.synchronize();
+                                }
 
                                 break;
                             }
@@ -194,7 +191,60 @@ fn key_to_char(key: evdev::Key) -> Option<char> {
         evdev::Key::KEY_COMMA => Some(','),
         evdev::Key::KEY_DOT => Some('.'),
         evdev::Key::KEY_SLASH => Some('/'),
-        _ => Some('\0'), // Return None for unmapped keys
+        _ => Some('\0'), // Return nul character for unmapped keys
+    }
+}
+
+fn char_to_key(ch: char) -> Option<Key> {
+    match ch {
+        'a' => Some(Key::A),
+        'b' => Some(Key::B),
+        'c' => Some(Key::C),
+        'd' => Some(Key::D),
+        'e' => Some(Key::E),
+        'f' => Some(Key::F),
+        'g' => Some(Key::G),
+        'h' => Some(Key::H),
+        'i' => Some(Key::I),
+        'j' => Some(Key::J),
+        'k' => Some(Key::K),
+        'l' => Some(Key::L),
+        'm' => Some(Key::M),
+        'n' => Some(Key::N),
+        'o' => Some(Key::O),
+        'p' => Some(Key::P),
+        'q' => Some(Key::Q),
+        'r' => Some(Key::R),
+        's' => Some(Key::S),
+        't' => Some(Key::T),
+        'u' => Some(Key::U),
+        'v' => Some(Key::V),
+        'w' => Some(Key::W),
+        'x' => Some(Key::X),
+        'y' => Some(Key::Y),
+        'z' => Some(Key::Z),
+        '1' => Some(Key::_1),
+        '2' => Some(Key::_2),
+        '3' => Some(Key::_3),
+        '4' => Some(Key::_4),
+        '5' => Some(Key::_5),
+        '6' => Some(Key::_6),
+        '7' => Some(Key::_7),
+        '8' => Some(Key::_8),
+        '9' => Some(Key::_9),
+        '0' => Some(Key::_0),
+        ' ' => Some(Key::Space),
+        '-' => Some(Key::Minus),
+        '=' => Some(Key::Equal),
+        '[' => Some(Key::LeftBrace),
+        ']' => Some(Key::RightBrace),
+        '\\' => Some(Key::BackSlash),
+        ';' => Some(Key::SemiColon),
+        '\'' => Some(Key::Apostrophe),
+        ',' => Some(Key::Comma),
+        '.' => Some(Key::Dot),
+        '/' => Some(Key::Slash),
+        _ => None, // Return None for unmapped characters
     }
 }
 
