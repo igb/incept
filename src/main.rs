@@ -101,7 +101,7 @@ fn main() {
                         ev.value(),
                         ev.code()
                     );
-                    if (ev.value() == 0) {
+                    if ev.value() == 0 {
                         log_keystroke(
                             key_to_char(key).expect("invalid keystroke...could not map char"),
                             &mut buffer,
@@ -109,7 +109,7 @@ fn main() {
                         );
 
                         for alias in shortcuts {
-                            if (buffer_matches(buffer, buffer_head, alias.0.to_string())) {
+                            if buffer_matches(buffer, buffer_head, alias.0.to_string()) {
                                 println!("Found match! Replacing {} with {}", alias.0, alias.1);
                                 for _ in alias.0.chars() {
                                     uinput_device.press(&Key::BackSpace);
