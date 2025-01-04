@@ -1,12 +1,11 @@
 use evdev::{Device, InputEventKind};
 use std::fs::OpenOptions;
-use std::os::fd::AsFd;
+
 use std::os::fd::AsRawFd;
 use std::path::Path;
-use std::{thread, time::Duration};
+
 use uinput::event::keyboard::Key;
 use uinput::event::Keyboard::All;
-use uinput::Device as UInputDevice;
 
 fn log_keystroke<const N: usize>(c: char, buffer: &mut [char; N], head: &mut usize) {
     buffer[*head] = c;
@@ -112,30 +111,30 @@ fn main() {
                         for alias in shortcuts {
                             if (buffer_matches(buffer, buffer_head, alias.0.to_string())) {
                                 println!("Found match! Replacing {} with {}", alias.0, alias.1);
-                                for alias_char in alias.0.chars() {
+                                for _ in alias.0.chars() {
                                     uinput_device.press(&Key::BackSpace);
                                     uinput_device.release(&Key::BackSpace);
                                 }
                                 uinput_device.synchronize();
                                 for substitution_char in alias.1.chars() {
-                                    if (substitution_char == '™') {
-                                        uinput_device.press(&Key::LeftControl);
-                                        uinput_device.press(&Key::LeftShift);
-                                        uinput_device.press(&Key::U);
-                                        uinput_device.release(&Key::U);
-                                        uinput_device.release(&Key::LeftShift);
-                                        uinput_device.release(&Key::LeftControl);
+                                    if substitution_char == '™' {
+                                        let _ = uinput_device.press(&Key::LeftControl);
+                                        let _ = uinput_device.press(&Key::LeftShift);
+                                        let _ = uinput_device.press(&Key::U);
+                                        let _ = uinput_device.release(&Key::U);
+                                        let _ = uinput_device.release(&Key::LeftShift);
+                                        let _ = uinput_device.release(&Key::LeftControl);
 
-                                        uinput_device.press(&Key::_2);
-                                        uinput_device.release(&Key::_2);
-                                        uinput_device.press(&Key::_1);
-                                        uinput_device.release(&Key::_1);
-                                        uinput_device.press(&Key::_2);
-                                        uinput_device.release(&Key::_2);
-                                        uinput_device.press(&Key::_2);
-                                        uinput_device.release(&Key::_2);
-                                        uinput_device.press(&Key::Enter);
-                                        uinput_device.release(&Key::Enter);
+                                        let _ = uinput_device.press(&Key::_2);
+                                        let _ = uinput_device.release(&Key::_2);
+                                        let _ = uinput_device.press(&Key::_1);
+                                        let _ = uinput_device.release(&Key::_1);
+                                        let _ = uinput_device.press(&Key::_2);
+                                        let _ = uinput_device.release(&Key::_2);
+                                        let _ = uinput_device.press(&Key::_2);
+                                        let _ = uinput_device.release(&Key::_2);
+                                        let _ = uinput_device.press(&Key::Enter);
+                                        let _ = uinput_device.release(&Key::Enter);
                                     } else {
                                         let subchar = char_to_key(substitution_char);
                                         println!("Printing  {}", substitution_char);
