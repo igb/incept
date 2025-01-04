@@ -12,15 +12,14 @@ fn log_keystroke<const N: usize>(c: char, buffer: &mut [char; N], head: &mut usi
     buffer[*head] = c;
     *head = (*head + 1) % N;
 }
+
 fn buffer_to_string<const N: usize>(buffer: [char; N], head: usize) -> String {
     let mut result = String::new();
 
     let mut index = head % N;
 
     loop {
-        if (buffer[index] != '\0') {
-            result.push(buffer[index]);
-        }
+        result.push(buffer[index]);
         if index == (head + (N - 1)) % N {
             break;
         }
@@ -313,7 +312,7 @@ fn test_buffer_to_string() {
     let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
     let mut buffer_head: usize = 0;
 
-    assert_eq!("", buffer_to_string(buffer, buffer_head));
+    assert_eq!("\0\0\0\0", buffer_to_string(buffer, buffer_head));
 
     log_keystroke('p', &mut buffer, &mut buffer_head);
     log_keystroke('a', &mut buffer, &mut buffer_head);
