@@ -118,11 +118,31 @@ fn main() {
                                 }
                                 uinput_device.synchronize();
                                 for substitution_char in alias.1.chars() {
-                                    let subchar = char_to_key(substitution_char);
-                                    println!("Printing  {}", substitution_char);
-                                    if subchar != None {
-                                        uinput_device.press(&subchar.unwrap());
-                                        uinput_device.release(&subchar.unwrap());
+                                    if (substitution_char == '™') {
+                                        uinput_device.press(&Key::LeftControl);
+                                        uinput_device.press(&Key::LeftShift);
+                                        uinput_device.press(&Key::U);
+                                        uinput_device.release(&Key::U);
+                                        uinput_device.release(&Key::LeftShift);
+                                        uinput_device.release(&Key::LeftControl);
+
+                                        uinput_device.press(&Key::_2);
+                                        uinput_device.release(&Key::_2);
+                                        uinput_device.press(&Key::_1);
+                                        uinput_device.release(&Key::_1);
+                                        uinput_device.press(&Key::_2);
+                                        uinput_device.release(&Key::_2);
+                                        uinput_device.press(&Key::_2);
+                                        uinput_device.release(&Key::_2);
+                                        uinput_device.press(&Key::Enter);
+                                        uinput_device.release(&Key::Enter);
+                                    } else {
+                                        let subchar = char_to_key(substitution_char);
+                                        println!("Printing  {}", substitution_char);
+                                        if subchar != None {
+                                            uinput_device.press(&subchar.unwrap());
+                                            uinput_device.release(&subchar.unwrap());
+                                        }
                                     }
                                 }
                                 uinput_device.synchronize();
