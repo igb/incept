@@ -6,7 +6,8 @@ kprobe:input_event {
 
     // Capture the current PID
     printf("  PID: %d\n", pid);
+    printf("  UID: %d\n", uid);
 
     // Capture the TTY associated with the process
-    printf("  TTY: %d\n", curtask->signal->tty->driver->name);
+    printf("  TTY: %s\n", curtask->signal->tty->name);
 }'

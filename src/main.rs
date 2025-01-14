@@ -2,6 +2,7 @@ use dirs::home_dir;
 use quick_xml::events::Event;
 use quick_xml::Reader;
 use std::fs::File;
+use std::io::BufRead;
 use std::io::BufReader;
 
 use evdev::{Device, InputEventKind};
@@ -12,6 +13,50 @@ use std::path::Path;
 
 use uinput::event::keyboard::Key;
 use uinput::event::Keyboard::All;
+
+struct User {
+    name: String,
+
+    uid: u64,
+
+    gid: u64,
+
+    dir: String,
+
+    shell: String,
+}
+
+// Parse a single line from /etc/passwd into a nix::unistd::User struct
+fn parse_user(line: &str) -> Option<User> {
+    let parts: Vec<&str> = line.split(':').collect();
+    if parts.len() >= 7 {
+        Some(User {
+            name: parts[0].to_string(),
+            uid: parts[2].parse().ok()?,
+            gid: parts[3].parse().ok()?,
+            dir: parts[5].to_string(),
+            shell: parts[6].to_string(),
+        })
+    } else {
+        None
+    }
+}
+
+fn get_users() {
+    let passwd_file = Path::new("/etc/passwd");
+    let file = File::open(passwd_file).unwrap();
+    let reader = std::io::BufReader::new(file);
+
+    // Iterate through each line in the passwd file
+    for (_index, line) in reader.lines().enumerate() {
+        let user = parse_user(&line.unwrap()).unwrap();
+
+        println!(
+            "Username: {}, UID: {}, Home Directory: {}",
+            user.name, user.uid, user.dir
+        );
+    }
+}
 
 fn log_keystroke<const N: usize>(c: char, buffer: &mut [char; N], head: &mut usize) {
     buffer[*head] = c;
@@ -50,7 +95,7 @@ fn main() {
         ("omw", "On my way!"),
     ];
     //    get_replacements();
-
+    get_users();
     // a circular buffer to store keystrokes...it's length should be equal to the length of the longest shortcut but elt's hardcode for now
     let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
     let mut buffer_head: usize = 0;
