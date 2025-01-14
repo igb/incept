@@ -1,3 +1,9 @@
+use dirs::home_dir;
+use quick_xml::events::Event;
+use quick_xml::Reader;
+use std::fs::File;
+use std::io::BufReader;
+
 use evdev::{Device, InputEventKind};
 use std::fs::OpenOptions;
 
@@ -43,6 +49,7 @@ fn main() {
         ("foo", "bar"),
         ("omw", "On my way!"),
     ];
+    //    get_replacements();
 
     // a circular buffer to store keystrokes...it's length should be equal to the length of the longest shortcut but elt's hardcode for now
     let mut buffer: [char; 4] = ['\0', '\0', '\0', '\0'];
@@ -112,10 +119,10 @@ fn main() {
                             if buffer_matches(buffer, buffer_head, alias.0.to_string()) {
                                 println!("Found match! Replacing {} with {}", alias.0, alias.1);
                                 for _ in alias.0.chars() {
-                                    uinput_device.press(&Key::BackSpace);
-                                    uinput_device.release(&Key::BackSpace);
+                                    let _ = uinput_device.press(&Key::BackSpace);
+                                    let _ = uinput_device.release(&Key::BackSpace);
                                 }
-                                uinput_device.synchronize();
+                                let _ = uinput_device.synchronize();
                                 for substitution_char in alias.1.chars() {
                                     if substitution_char == '™' {
                                         let _ = uinput_device.press(&Key::LeftControl);
@@ -139,12 +146,12 @@ fn main() {
                                         let subchar = char_to_key(substitution_char);
                                         println!("Printing  {}", substitution_char);
                                         if subchar != None {
-                                            uinput_device.press(&subchar.unwrap());
-                                            uinput_device.release(&subchar.unwrap());
+                                            let _ = uinput_device.press(&subchar.unwrap());
+                                            let _ = uinput_device.release(&subchar.unwrap());
                                         }
                                     }
                                 }
-                                uinput_device.synchronize();
+                                let _ = uinput_device.synchronize();
                                 break;
                             }
                             println!(
@@ -272,6 +279,35 @@ fn char_to_key(ch: char) -> Option<Key> {
         '.' => Some(Key::Dot),
         '/' => Some(Key::Slash),
         _ => None, // Return None for unmapped characters
+    }
+}
+
+fn get_replacements() {
+    println!(
+        "cofig file: {:?}",
+        home_dir().unwrap().join("/.config/incept/replacements.xml")
+    );
+
+    // Open the XML file
+    let file = File::open("/x").unwrap();
+    let reader = BufReader::new(file);
+
+    // Initialize the XML reader
+    let mut xml_reader = Reader::from_reader(reader);
+    xml_reader.trim_text(false); // Optional: trim whitespace in text nodes
+
+    // Buffer for storing event data
+    let mut buf = Vec::new();
+
+    loop {
+        match xml_reader.read_event_into(&mut buf) {
+            Ok(Event::Start(ref e)) => {
+                println!("Start tag: {:?}", e.name());
+            }
+            Ok(Event::Eof) => break,
+
+            _ => {}
+        }
     }
 }
 
